@@ -114,7 +114,19 @@ onTimeout = function(id) {
 	user.flag.voiceHolding = false;
 }
 
-document.body.onload = function() {
+buildController = function() {
+	var container = document.getElementById('container');
+
+	var container1 = document.createElement( 'div' );
+	container1.id = "container1";
+	container1.className = "container";
+	container.appendChild(container1);
+
+	var container2 = document.createElement( 'div' );
+	container2.id = "container2";
+	container2.className = "container";
+	container.appendChild(container2);
+
 	buildPlayerUI(document.getElementById('container1'), 0);
 	buildPlayerUI(document.getElementById('container2'), 1);
 
@@ -145,9 +157,12 @@ animate();
 function init() {
 
 	container = document.createElement( 'div' );
+	container.id = "container";
 	document.body.appendChild( container );
 
-	camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 100000 );
+	buildController();
+
+	camera = new THREE.PerspectiveCamera( 60, 800 / 600, 1, 100000 );
 	camera.position.z = 3200;
 
 	//
@@ -181,7 +196,7 @@ function init() {
 		fragmentShader: shader.fragmentShader
 	} );
 
-	for ( var i = 0; i < 500; i ++ ) {
+	for ( var i = 0; i < 502; i ++ ) {
 
 		var mesh = new THREE.Mesh( geometry, material );
 
@@ -203,12 +218,12 @@ function init() {
 
 	renderer = new THREE.WebGLRenderer();
 	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize( 800, 600 );
 	container.appendChild( renderer.domElement );
 
 	//
 
-	window.addEventListener( 'resize', onWindowResize, false );
+	//window.addEventListener( 'resize', onWindowResize, false );
 
 }
 
@@ -235,13 +250,41 @@ function render() {
 
 	camera.lookAt( scene.position );
 
-	for ( var i = 0, il = spheres.length; i < il; i ++ ) {
+	for ( var i = 0, il = 500; i < il; i ++ ) {
 
 		var sphere = spheres[ i ];
 
 		sphere.position.x = 5000 * Math.cos( timer + i );
 		sphere.position.y = 5000 * Math.sin( timer + i * 1.1 );
 
+	}
+
+	// Sphere 1
+	var sphere = spheres[500];
+	if(Global[0].flag.mouseHolding || Global[0].flag.voiceHolding || Global[0].status.progress > 0) {
+		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[0].status.progress;
+		sphere.position.x = -600;
+		sphere.position.y = 0;
+		sphere.position.z = 1500;
+	} else {
+		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4;
+		sphere.position.y += 30;
+		if(sphere.position.y > 5000)
+			sphere.position.y = 5000;
+	}
+
+	// Sphere 2
+	sphere = spheres[501];
+	if(Global[1].flag.mouseHolding || Global[1].flag.voiceHolding || Global[1].status.progress > 0) {
+		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[1].status.progress;
+		sphere.position.x = 650;
+		sphere.position.y = 0;
+		sphere.position.z = 1500;
+	} else {
+		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4;
+		sphere.position.y += 30;
+		if(sphere.position.y > 5000)
+			sphere.position.y = 5000;
 	}
 
 	renderer.render( scene, camera );
