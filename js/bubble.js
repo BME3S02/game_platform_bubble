@@ -24,12 +24,84 @@ for(i = 0; i < 2; i++) {
 	};
 }
 
-/******************
- *                *
- *   Controller   *
- *                *
- ******************/
+/************************
+ *                      *
+ *   Audio Controller   *
+ *                      *
+ ************************/
+buildAudioSelectUI = function(dom, id) {
+	var container = document.createElement( 'div' );
+	dom.appendChild(container);
+
+	var select = document.createElement('select');
+	container.appendChild(select);
+
+	navigator.mediaDevices.getUserMedia({"audio": true}).then(function() {
+		devices_list(select, id);
+	});
+}
+
+devices_list = function(dom, id) {
+	var handleMediaSourcesList = function(list) {
+		for(i=0;i<list.length;i++){
+			var device= list[i];
+			if(device.kind == 'audioinput') {
+				dom.options.add(new Option(device.label ,device.deviceId));
+			}
+		}
+		dom.onchange = function() {
+			usemic(dom, id);
+		}
+	}
+	if (navigator["mediaDevices"] && navigator["mediaDevices"]["enumerateDevices"]) {
+		navigator["mediaDevices"]["enumerateDevices"]().then(handleMediaSourcesList);
+	// Old style API
+	} else if (window["MediaStreamTrack"] && window["MediaStreamTrack"]["getSources"]) {
+		window["MediaStreamTrack"]["getSources"](handleMediaSourcesList);
+	}
+}
+
+usemic = function(dom, id) {
+	console.log(dom.selectedIndex);
+	navigator.mediaDevices.getUserMedia ({
+		"audio":{
+			"optional": [{
+				"sourceId": dom.value
+			}]
+		}}, function (stream) {
+            //...some code to use stream from mic
+		},function(err){
+			debuginfo('getMedia ERR:'+err.message );
+		});
+}
+
+
+/**************************
+ *                        *
+ *   General Controller   *
+ *                        *
+ **************************/
+buildController = function(dom) {
+	var container1 = document.createElement( 'div' );
+	container1.id = "container1";
+	container1.className = "container";
+	dom.appendChild(container1);
+
+	var container2 = document.createElement( 'div' );
+	container2.id = "container2";
+	container2.className = "container";
+	dom.appendChild(container2);
+
+	buildPlayerUI(document.getElementById('container1'), 0);
+	buildPlayerUI(document.getElementById('container2'), 1);
+
+	var audio = new Audio('./audio/bubble_title.mp3');
+	audio.play();
+}
+
 buildPlayerUI = function(dom, id) {
+	buildAudioSelectUI(dom, id);
+
 	Global[id].status.scoreDOM = document.createElement('div');
 	Global[id].status.scoreDOM.className = 'score';
 	Global[id].status.scoreDOM.innerHTML = 0;
@@ -135,26 +207,6 @@ onTimeout = function(id) {
 
 }
 
-buildController = function() {
-	var container = document.getElementById('container');
-
-	var container1 = document.createElement( 'div' );
-	container1.id = "container1";
-	container1.className = "container";
-	container.appendChild(container1);
-
-	var container2 = document.createElement( 'div' );
-	container2.id = "container2";
-	container2.className = "container";
-	container.appendChild(container2);
-
-	buildPlayerUI(document.getElementById('container1'), 0);
-	buildPlayerUI(document.getElementById('container2'), 1);
-
-	var audio = new Audio('./audio/bubble_title.mp3');
-	audio.play();
-}
-
 /******************
  *                *
  *   Background   *
@@ -181,7 +233,7 @@ function init() {
 	container.id = "container";
 	document.body.appendChild( container );
 
-	buildController();
+	buildController(container);
 
 	camera = new THREE.PerspectiveCamera( 60, 800 / 600, 1, 100000 );
 	camera.position.z = 3200;
