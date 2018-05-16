@@ -62,17 +62,62 @@ devices_list = function(dom, id) {
 }
 
 usemic = function(dom, id) {
-	console.log(dom.selectedIndex);
-	navigator.mediaDevices.getUserMedia ({
+	navigator.mediaDevices.getUserMedia({
 		"audio":{
 			"optional": [{
 				"sourceId": dom.value
 			}]
-		}}, function (stream) {
-            //...some code to use stream from mic
-		},function(err){
-			debuginfo('getMedia ERR:'+err.message );
+		}}).then(function (stream) {
+			var context = new AudioContext();
+
+			// analyser extracts frequency, waveform, etc.
+			var analyser = context.createAnalyser();
+			analyser.smoothingTimeConstant = 0.3;
+			analyser.fftSize = 1024;
+
+			// setup a javascript node
+			javascriptNode = context.createScriptProcessor(2048, 1, 1);
+
+			// connect to destination, else it isn't called
+			javascriptNode.connect(context.destination);
+
+			javascriptNode.onaudioprocess = function() {
+				// get the average, bincount is fftsize / 2
+				var array =  new Uint8Array(analyser.frequencyBinCount);
+				analyser.getByteFrequencyData(array);
+				var average = getAverageVolume(array)
+				console.log(average);
+			}
+
+			// create a buffer source node
+			sourceNode = context.createBufferSource();
+
+			// connect the source to the analyser
+			sourceNode.connect(analyser);
+
+			// we use the javascript node to draw at a specific interval.
+			analyser.connect(javascriptNode);
+
+			// and connect to destination, if you want audio
+			sourceNode.connect(context.destination);
+		}).catch(function(err){
+			console.error('getMedia ERR:'+err.message );
 		});
+}
+
+function getAverageVolume(array) {
+	var values = 0;
+	var average;
+
+	var length = array.length;
+
+	// get all the frequency amplitudes
+	for (var i = 0; i < length; i++) {
+		values += array[i];
+	}
+
+	average = values / length;
+	return average;
 }
 
 
