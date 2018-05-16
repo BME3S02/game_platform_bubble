@@ -12,6 +12,8 @@ for(i = 0; i < 2; i++) {
 			voiceHolding: false
 		},
 		status: {
+			score: 0,
+			scoreDOM: null,
 			progress: 0,
 			timer: null
 		},
@@ -28,6 +30,11 @@ for(i = 0; i < 2; i++) {
  *                *
  ******************/
 buildPlayerUI = function(dom, id) {
+	Global[id].status.scoreDOM = document.createElement('div');
+	Global[id].status.scoreDOM.className = 'score';
+	Global[id].status.scoreDOM.innerHTML = 0;
+	dom.appendChild(Global[id].status.scoreDOM);
+
 	var buttonContainer = document.createElement('div');
 	buttonContainer.className = 'blow-button-container';
 	dom.appendChild(buttonContainer);
@@ -50,8 +57,17 @@ buildPlayerUI = function(dom, id) {
 }
 
 onMouseDown = function(id) {
+	Global[id].flag.mouseHolding = true;
+	onStart(id);
+}
+
+onMouseUp = function(id) {
+	Global[id].flag.mouseHolding = false;
+	onEnd(id);
+}
+
+onStart = function(id) {
 	var user = Global[id];
-	user.flag.mouseHolding = true;
 	var audio = new Audio('./audio/bubble_tap.mp3');
 	audio.play();
 
@@ -71,10 +87,9 @@ onMouseDown = function(id) {
 	}
 }
 
-onMouseUp = function(id) {
+onEnd = function(id) {
 	var user = Global[id];
 
-	user.flag.mouseHolding = false;
 	user.blowing.voice.pause();
 	clearTimeout(user.blowing.timer);
 	user.blowing.timer = null;
@@ -109,9 +124,15 @@ onTimeout = function(id) {
 	user.blowing.voice.pause();
 	user.blowing.voice.currentTime = 0;
 	user.blowing.timer = null;
+
+	user.status.score += 1;
+	user.status.scoreDOM.innerHTML = user.status.score;
 	user.status.progress = 0;
+
 	user.flag.mouseHolding = false;
 	user.flag.voiceHolding = false;
+
+
 }
 
 buildController = function() {
@@ -202,7 +223,7 @@ function init() {
 
 		mesh.position.x = Math.random() * 10000 - 5000;
 		mesh.position.y = Math.random() * 10000 - 5000;
-		mesh.position.z = Math.random() * 10000 - 5000;
+		mesh.position.z = Math.random() * 6000 - 5000;
 
 		mesh.scale.x = mesh.scale.y = mesh.scale.z = Math.random() * 3 + 1;
 
@@ -262,7 +283,7 @@ function render() {
 	// Sphere 1
 	var sphere = spheres[500];
 	if(Global[0].flag.mouseHolding || Global[0].flag.voiceHolding || Global[0].status.progress > 0) {
-		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[0].status.progress;
+		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[0].status.progress + 0.001;
 		sphere.position.x = -600;
 		sphere.position.y = 0;
 		sphere.position.z = 1500;
@@ -276,7 +297,7 @@ function render() {
 	// Sphere 2
 	sphere = spheres[501];
 	if(Global[1].flag.mouseHolding || Global[1].flag.voiceHolding || Global[1].status.progress > 0) {
-		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[1].status.progress;
+		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[1].status.progress + 0.001;
 		sphere.position.x = 650;
 		sphere.position.y = 0;
 		sphere.position.z = 1500;
