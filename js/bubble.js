@@ -55,9 +55,6 @@ onMouseDown = function(id) {
 	var audio = new Audio('./audio/bubble_tap.mp3');
 	audio.play();
 
-	console.log(audio.volume);
-
-	user.blowing.voice.currentTime = 1.8 * user.status.progress;
 	user.blowing.voice.play();
 
 	if(user.blowing.timer != null) {
@@ -65,7 +62,13 @@ onMouseDown = function(id) {
 	}
 	user.blowing.timer = setTimeout(function() {
 		onTimeout(id);
-	}, 1800);
+	}, 1800 * (1 - user.status.progress));
+
+	if(user.status.timer == null) {
+		user.status.timer = setTimeout(function() {
+			onUpdateProgress(id);
+		}, 50);
+	}
 }
 
 onMouseUp = function(id) {
@@ -78,7 +81,22 @@ onMouseUp = function(id) {
 }
 
 onUpdateProgress = function(id) {
+	var user = Global[id];
 
+	if(user.flag.mouseHolding || user.flag.voiceHolding) {
+		user.status.progress += 0.05 / 1.8;
+	} else {
+		user.status.progress -= 0.05 / 32;
+	}
+
+	if(user.status.progress <= 0) {
+		user.status.progress = 0;
+		user.status.timer = null;
+	} else {
+		user.status.timer = setTimeout(function() {
+			onUpdateProgress(id);
+		}, 50);
+	}
 }
 
 onTimeout = function(id) {
@@ -89,6 +107,7 @@ onTimeout = function(id) {
 	audio.play();
 
 	user.blowing.voice.pause();
+	user.blowing.voice.currentTime = 0;
 	user.blowing.timer = null;
 	user.status.progress = 0;
 	user.flag.mouseHolding = false;
