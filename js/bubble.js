@@ -54,7 +54,6 @@ onMouseDown = function(id) {
 	user.flag.mouseHolding = true;
 	var audio = new Audio('./audio/bubble_tap.mp3');
 	audio.play();
-	audio.volume = 2;
 
 	console.log(audio.volume);
 
