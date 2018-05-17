@@ -18,6 +18,12 @@
 			overflow:hidden;
 		}
 
+		#backBtn {
+			position: absolute;
+			top: 5px;
+			left: 5px;
+		}
+
 		#container {
 			position: relative;
 			display: inline-block;
@@ -90,5 +96,6 @@
 
 <body>
 	<script src="./js/bubble.js"></script>
+    <input id="backBtn" type="button" value="返回" onclick="history.go(-1)">
 </body>
 </html>
