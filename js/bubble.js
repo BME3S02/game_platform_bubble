@@ -314,7 +314,7 @@ function init() {
 		fragmentShader: shader.fragmentShader
 	} );
 
-	for ( var i = 0; i < 502; i ++ ) {
+	for ( var i = 0; i < 202; i ++ ) {
 
 		var mesh = new THREE.Mesh( geometry, material );
 
@@ -368,7 +368,7 @@ function render() {
 
 	camera.lookAt( scene.position );
 
-	for ( var i = 0, il = 500; i < il; i ++ ) {
+	for ( var i = 0, il = 200; i < il; i ++ ) {
 
 		var sphere = spheres[ i ];
 
@@ -378,7 +378,7 @@ function render() {
 	}
 
 	// Sphere 1
-	var sphere = spheres[500];
+	var sphere = spheres[200];
 	if(Global[0].flag.mouseHolding || Global[0].flag.voiceHolding || Global[0].status.progress > 0) {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[0].status.progress + 0.001;
 		sphere.position.x = -600;
@@ -392,7 +392,7 @@ function render() {
 	}
 
 	// Sphere 2
-	sphere = spheres[501];
+	sphere = spheres[201];
 	if(Global[1].flag.mouseHolding || Global[1].flag.voiceHolding || Global[1].status.progress > 0) {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[1].status.progress + 0.001;
 		sphere.position.x = 650;
