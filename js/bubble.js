@@ -68,56 +68,86 @@ usemic = function(dom, id) {
 				"sourceId": dom.value
 			}]
 		}}).then(function (stream) {
-			var context = new AudioContext();
+			// grab an audio context
+			var audioContext = new AudioContext();
 
-			// analyser extracts frequency, waveform, etc.
-			var analyser = context.createAnalyser();
-			analyser.smoothingTimeConstant = 0.3;
-			analyser.fftSize = 1024;
+			// Create an AudioNode from the stream.
+			var mediaStreamSource = audioContext.createMediaStreamSource(stream);
 
-			// setup a javascript node
-			javascriptNode = context.createScriptProcessor(2048, 1, 1);
+			// Create a new volume meter and connect it.
+			var meter = createAudioMeter(audioContext);
+			mediaStreamSource.connect(meter);
 
-			// connect to destination, else it isn't called
-			javascriptNode.connect(context.destination);
-
-			javascriptNode.onaudioprocess = function() {
-				// get the average, bincount is fftsize / 2
-				var array =  new Uint8Array(analyser.frequencyBinCount);
-				analyser.getByteFrequencyData(array);
-				var average = getAverageVolume(array)
-				console.log(average);
-			}
-
-			// create a buffer source node
-			sourceNode = context.createBufferSource();
-
-			// connect the source to the analyser
-			sourceNode.connect(analyser);
-
-			// we use the javascript node to draw at a specific interval.
-			analyser.connect(javascriptNode);
-
-			// and connect to destination, if you want audio
-			sourceNode.connect(context.destination);
+			// kick off the visual updating
+			onLevelChange(meter);
 		}).catch(function(err){
 			console.error('getMedia ERR:'+err.message );
 		});
 }
 
-function getAverageVolume(array) {
-	var values = 0;
-	var average;
+createAudioMeter = function(audioContext,clipLevel,averaging,clipLag) {
+	var processor = audioContext.createScriptProcessor(512);
+	processor.onaudioprocess = volumeAudioProcess;
+	processor.clipping = false;
+	processor.lastClip = 0;
+	processor.volume = 0;
+	processor.clipLevel = clipLevel || 0.98;
+	processor.averaging = averaging || 0.95;
+	processor.clipLag = clipLag || 750;
 
-	var length = array.length;
+	// this will have no effect, since we don't copy the input to the output,
+	// but works around a current Chrome bug.
+	processor.connect(audioContext.destination);
 
-	// get all the frequency amplitudes
-	for (var i = 0; i < length; i++) {
-		values += array[i];
+	processor.checkClipping =
+		function(){
+			if (!this.clipping)
+				return false;
+			if ((this.lastClip + this.clipLag) < window.performance.now())
+				this.clipping = false;
+			return this.clipping;
+		};
+
+	processor.shutdown =
+		function(){
+			this.disconnect();
+			this.onaudioprocess = null;
+		};
+
+	return processor;
+}
+
+volumeAudioProcess = function( event ) {
+	var buf = event.inputBuffer.getChannelData(0);
+	var bufLength = buf.length;
+	var sum = 0;
+	var x;
+
+	// Do a root-mean-square on the samples: sum up the squares...
+	for (var i=0; i<bufLength; i++) {
+		x = buf[i];
+		if (Math.abs(x)>=this.clipLevel) {
+			this.clipping = true;
+			this.lastClip = window.performance.now();
+		}
+		sum += x * x;
 	}
 
-	average = values / length;
-	return average;
+	// ... then take the square root of the sum.
+	var rms =  Math.sqrt(sum / bufLength);
+
+	// Now smooth this out with the averaging factor applied
+	// to the previous sample - take the max here because we
+	// want "fast attack, slow release."
+	this.volume = Math.max(rms, this.volume*this.averaging);
+}
+
+onLevelChange = function(meter) {
+	console.log(meter.volume);
+
+	setTimeout(function() {
+		onLevelChange(meter);
+	}, 100);
 }
 
 
