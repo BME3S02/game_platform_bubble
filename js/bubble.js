@@ -52,6 +52,8 @@ devices_list = function(dom, id) {
 		dom.onchange = function() {
 			usemic(dom, id);
 		}
+		if(list.length > 0)
+			usemic(dom, 0);
 	}
 	if (navigator["mediaDevices"] && navigator["mediaDevices"]["enumerateDevices"]) {
 		navigator["mediaDevices"]["enumerateDevices"]().then(handleMediaSourcesList);
