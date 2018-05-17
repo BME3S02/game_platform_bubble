@@ -207,6 +207,10 @@ buildPlayerUI = function(dom, id) {
 
 onMouseDown = function(id) {
 	Global[id].flag.mouseHolding = true;
+
+	var audio = new Audio('./audio/bubble_tap.mp3');
+	audio.play();
+
 	onStart(id);
 }
 
@@ -217,8 +221,6 @@ onMouseUp = function(id) {
 
 onStart = function(id) {
 	var user = Global[id];
-	var audio = new Audio('./audio/bubble_tap.mp3');
-	audio.play();
 
 	user.blowing.voice.play();
 
