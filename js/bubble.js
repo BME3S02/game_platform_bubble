@@ -149,9 +149,9 @@ volumeAudioProcess = function( event ) {
 
 onLevelChange = function(meter, id) {
 	var user = Global[id];
-	if(meter.volume >= 0.4)
+	if(meter.volume >= 0.4 && !user.flag.voice)
 		onVoiceUp(id);
-	else
+	else if(meter.volume < 0.4 && user.flag.voice)
 		onVoiceDown(id);
 
 	setTimeout(function() {
@@ -162,11 +162,10 @@ onLevelChange = function(meter, id) {
 onVoiceUp = function(id) {
 	var user = Global[id];
 
-	if(!user.flag.voice) {
-		user.flag.voiceHolding = true;
-		user.flag.voice = true;
+	user.flag.voiceHolding = true;
+	user.flag.voice = true;
+	if(!user.flag.mouseHolding && !user.flag.key)
 		onStart(id);
-	}
 }
 
 onVoiceDown = function(id) {
@@ -250,12 +249,14 @@ buildPlayerUI = function(dom, id) {
 }
 
 onMouseDown = function(id) {
-	Global[id].flag.mouseHolding = true;
+	var user = Global[id];
+	user.flag.mouseHolding = true;
 
 	var audio = new Audio('./audio/bubble_tap.mp3');
 	audio.play();
 
-	onStart(id);
+	if(!user.flag.key && !user.flag.voice)
+		onStart(id);
 }
 
 onMouseUp = function(id) {
@@ -269,7 +270,8 @@ onKeyDown = function(id) {
 	if(!user.flag.key) {
 		user.flag.keyHolding = true;
 		user.flag.key = true;
-		onStart(id);
+		if(!user.flag.mouseHolding && !user.flag.voice)
+			onStart(id);
 	}
 }
 
