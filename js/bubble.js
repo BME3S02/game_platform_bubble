@@ -454,7 +454,7 @@ function render() {
 	if(Global[0].flag.mouseHolding || Global[0].flag.keyHolding || Global[0].flag.voiceHolding || Global[0].status.progress > 0) {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[0].status.progress + 0.001;
 		sphere.position.x = -600;
-		sphere.position.y = 0;
+		sphere.position.y = -400 + 400 * Global[0].status.progress;
 		sphere.position.z = 1500;
 	} else {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4;
@@ -467,8 +467,8 @@ function render() {
 	sphere = spheres[201];
 	if(Global[1].flag.mouseHolding || Global[1].flag.keyHolding || Global[1].flag.voiceHolding || Global[1].status.progress > 0) {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[1].status.progress + 0.001;
-		sphere.position.x = 650;
-		sphere.position.y = 0;
+		sphere.position.x = 670;
+		sphere.position.y = -400 + 400 * Global[1].status.progress;
 		sphere.position.z = 1500;
 	} else {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4;
