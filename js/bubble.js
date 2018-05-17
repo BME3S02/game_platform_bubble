@@ -11,6 +11,7 @@ for(i = 0; i < 2; i++) {
 			mouseHolding: false,
 			key: false,
 			keyHolding: false,
+			voice: false,
 			voiceHolding: false
 		},
 		status: {
@@ -83,7 +84,7 @@ usemic = function(dom, id) {
 			mediaStreamSource.connect(meter);
 
 			// kick off the visual updating
-			onLevelChange(meter);
+			onLevelChange(meter, id);
 		}).catch(function(err){
 			console.error('getMedia ERR:'+err.message );
 		});
@@ -146,12 +147,33 @@ volumeAudioProcess = function( event ) {
 	this.volume = Math.max(rms, this.volume*this.averaging);
 }
 
-onLevelChange = function(meter) {
-	console.log(meter.volume);
+onLevelChange = function(meter, id) {
+	var user = Global[id];
+	if(meter.volume >= 0.4)
+		onVoiceUp(id);
+	else
+		onVoiceDown(id);
 
 	setTimeout(function() {
-		onLevelChange(meter);
-	}, 100);
+		onLevelChange(meter, id);
+	}, 40);
+}
+
+onVoiceUp = function(id) {
+	var user = Global[id];
+
+	if(!user.flag.voice) {
+		user.flag.voiceHolding = true;
+		user.flag.voice = true;
+		onStart(id);
+	}
+}
+
+onVoiceDown = function(id) {
+	var user = Global[id];
+	user.flag.voiceHolding = false;
+	user.flag.voice = false;
+	onEnd(id);
 }
 
 
