@@ -9,6 +9,8 @@ for(i = 0; i < 2; i++) {
 	Global[i] = {
 		flag: {
 			mouseHolding: false,
+			key: false,
+			keyHolding: false,
 			voiceHolding: false
 		},
 		status: {
@@ -203,6 +205,26 @@ buildPlayerUI = function(dom, id) {
 	button.addEventListener('mouseup', function() {
 		onMouseUp(id);
 	});
+
+	document.addEventListener('keydown', function(event) {
+		switch(event.keyCode) {
+			// LEFT
+			case 37: onKeyDown(0); break;
+
+			// RIGHT
+			case 39: onKeyDown(1); break;
+		}
+	});
+
+	document.addEventListener('keyup', function(event) {
+		switch(event.keyCode) {
+			// LEFT
+			case 37: onKeyUp(0); break;
+
+			// RIGHT
+			case 39: onKeyUp(1); break;
+		}
+	});
 }
 
 onMouseDown = function(id) {
@@ -216,6 +238,23 @@ onMouseDown = function(id) {
 
 onMouseUp = function(id) {
 	Global[id].flag.mouseHolding = false;
+	onEnd(id);
+}
+
+onKeyDown = function(id) {
+	var user = Global[id];
+
+	if(!user.flag.key) {
+		user.flag.keyHolding = true;
+		user.flag.key = true;
+		onStart(id);
+	}
+}
+
+onKeyUp = function(id) {
+	var user = Global[id];
+	user.flag.keyHolding = false;
+	user.flag.key = false;
 	onEnd(id);
 }
 
@@ -249,7 +288,7 @@ onEnd = function(id) {
 onUpdateProgress = function(id) {
 	var user = Global[id];
 
-	if(user.flag.mouseHolding || user.flag.voiceHolding) {
+	if(user.flag.mouseHolding || user.flag.keyHolding || user.flag.voiceHolding) {
 		user.status.progress += 0.05 / 1.8;
 	} else {
 		user.status.progress -= 0.05 / 32;
@@ -281,9 +320,8 @@ onTimeout = function(id) {
 	user.status.progress = 0;
 
 	user.flag.mouseHolding = false;
+	user.flag.keyHolding = false;
 	user.flag.voiceHolding = false;
-
-
 }
 
 /******************
@@ -413,7 +451,7 @@ function render() {
 
 	// Sphere 1
 	var sphere = spheres[200];
-	if(Global[0].flag.mouseHolding || Global[0].flag.voiceHolding || Global[0].status.progress > 0) {
+	if(Global[0].flag.mouseHolding || Global[0].flag.keyHolding || Global[0].flag.voiceHolding || Global[0].status.progress > 0) {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[0].status.progress + 0.001;
 		sphere.position.x = -600;
 		sphere.position.y = 0;
@@ -427,7 +465,7 @@ function render() {
 
 	// Sphere 2
 	sphere = spheres[201];
-	if(Global[1].flag.mouseHolding || Global[1].flag.voiceHolding || Global[1].status.progress > 0) {
+	if(Global[1].flag.mouseHolding || Global[1].flag.keyHolding || Global[1].flag.voiceHolding || Global[1].status.progress > 0) {
 		sphere.scale.x = sphere.scale.y = sphere.scale.z = 4 * Global[1].status.progress + 0.001;
 		sphere.position.x = 650;
 		sphere.position.y = 0;
