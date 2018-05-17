@@ -23,6 +23,12 @@ for(i = 0; i < 2; i++) {
 		blowing: {
 			voice: new Audio('./audio/bubble_blow.mp3'),
 			timer: null
+		},
+		audio: {
+			context: null,
+			mediaStreamSource: null,
+			meter: null,
+			timer: null
 		}
 	};
 }
@@ -56,7 +62,7 @@ devices_list = function(dom, id) {
 			usemic(dom, id);
 		}
 		if(list.length > 0)
-			usemic(dom, 0);
+			usemic(dom, id);
 	}
 	if (navigator["mediaDevices"] && navigator["mediaDevices"]["enumerateDevices"]) {
 		navigator["mediaDevices"]["enumerateDevices"]().then(handleMediaSourcesList);
@@ -73,18 +79,22 @@ usemic = function(dom, id) {
 				"sourceId": dom.value
 			}]
 		}}).then(function (stream) {
+			var userAudio = Global[id].audio;
+
 			// grab an audio context
-			var audioContext = new AudioContext();
+			userAudio.context = new AudioContext();
 
 			// Create an AudioNode from the stream.
-			var mediaStreamSource = audioContext.createMediaStreamSource(stream);
+			userAudio.mediaStreamSource = userAudio.context.createMediaStreamSource(stream);
 
 			// Create a new volume meter and connect it.
-			var meter = createAudioMeter(audioContext);
-			mediaStreamSource.connect(meter);
+			userAudio.meter = createAudioMeter(userAudio.context);
+			userAudio.mediaStreamSource.connect(userAudio.meter);
 
 			// kick off the visual updating
-			onLevelChange(meter, id);
+			if(userAudio.timer != null)
+				clearTimeout(userAudio.timer);
+			onLevelChange(userAudio.meter, id);
 		}).catch(function(err){
 			console.error('getMedia ERR:'+err.message );
 		});
@@ -154,7 +164,7 @@ onLevelChange = function(meter, id) {
 	else if(meter.volume < 0.4 && user.flag.voice)
 		onVoiceDown(id);
 
-	setTimeout(function() {
+	user.audio.timer = setTimeout(function() {
 		onLevelChange(meter, id);
 	}, 40);
 }
