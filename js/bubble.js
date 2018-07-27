@@ -410,6 +410,7 @@ function init() {
 	var geometry = new THREE.SphereBufferGeometry( 100, 32, 16 );
 
 	var shader = THREE.FresnelShader;
+	var shader_colored = THREE.FresnelShaderColored;
 	var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
 
 	uniforms[ "tCube" ].value = textureCube;
@@ -420,12 +421,24 @@ function init() {
 		fragmentShader: shader.fragmentShader
 	} );
 
-	for ( var i = 0; i < 202; i ++ ) {
+	var material_colored = new THREE.ShaderMaterial( {
+		uniforms: uniforms,
+		vertexShader: shader.vertexShader,
+		fragmentShader: shader_colored.fragmentShader
+	} );
 
-		var mesh = new THREE.Mesh( geometry, material );
+	for ( var i = 0; i < 202; i ++ ) {
+		var mesh;
+
+		if(i < 200) {
+			mesh = new THREE.Mesh( geometry, material );
+			mesh.position.y = Math.random() * 10000 - 5000;
+		} else {
+			mesh = new THREE.Mesh( geometry, material_colored );
+			mesh.position.y = 5000;
+		}
 
 		mesh.position.x = Math.random() * 10000 - 5000;
-		mesh.position.y = Math.random() * 10000 - 5000;
 		mesh.position.z = Math.random() * 6000 - 5000;
 
 		mesh.scale.x = mesh.scale.y = mesh.scale.z = Math.random() * 3 + 1;
